@@ -1,0 +1,44 @@
+name: Build Kernel with KernelSU
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Kernel Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v4
+      with:
+        repository: https://github.com/Yenping0001/android_kernel_samsung_a32x.git
+        path: kernel
+
+    - name: Clone KernelSU
+      run: |
+        git clone --depth=1 https://github.com/tiann/KernelSU.git kernel/KernelSU
+
+    - name: Integrate KernelSU
+      run: |
+        cd kernel/
+        bash KernelSU/scripts/setup.sh
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y bc bison flex libssl-dev make gcc clang
+
+    - name: Build Kernel
+      run: |
+        cd kernel
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        make your_defconfig
+        make -j$(nproc)
+
+    - name: Upload Kernel Image
+      uses: actions/upload-artifact@v4
+      with:
+        name: Kernel Image
+        path: kernel/out/arch/arm64/boot/Image.gz
