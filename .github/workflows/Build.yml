@@ -1,44 +1,50 @@
-name: Build Kernel with KernelSU
+name: Android Kernel Build
 
 on:
   workflow_dispatch:
+    inputs:
+      kernel_repo:
+        description: 'Kernel source repo to fork (e.g. https://github.com/username/kernel)'
+        required: true
+      branch:
+        description: 'Branch to build (e.g. android-12)'
+        required: true
+      defconfig:
+        description: 'Kernel defconfig (e.g. vendor/device_defconfig)'
+        required: true
 
 jobs:
-  build:
-    name: Kernel Build
+  fork-and-build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Kernel Source
+    - name: Checkout workflow repo
       uses: actions/checkout@v4
-      with:
-        repository: https://github.com/Yenping0001/android_kernel_samsung_a32x.git
-        path: kernel
 
-    - name: Clone KernelSU
+    - name: Fork kernel repo
       run: |
-        git clone --depth=1 https://github.com/tiann/KernelSU.git kernel/KernelSU
+        git clone --depth=1 --branch "${{ github.event.inputs.branch }}" "${{ github.event.inputs.kernel_repo }}" kernel
+        echo "Kernel repo forked into ./kernel"
 
-    - name: Integrate KernelSU
-      run: |
-        cd kernel/
-        bash KernelSU/scripts/setup.sh
-
-    - name: Install Dependencies
+    - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y bc bison flex libssl-dev make gcc clang
+        sudo apt install -y bc bison flex libssl-dev make gcc clang curl
 
-    - name: Build Kernel
+    - name: Set up environment
       run: |
-        cd kernel
         export ARCH=arm64
         export CROSS_COMPILE=aarch64-linux-gnu-
-        make your_defconfig
-        make -j$(nproc)
+        export PATH=$PATH:/usr/bin
 
-    - name: Upload Kernel Image
+    - name: Build kernel
+      working-directory: kernel
+      run: |
+        make O=out ${{ github.event.inputs.defconfig }}
+        make -j$(nproc) O=out
+
+    - name: Upload kernel image
       uses: actions/upload-artifact@v4
       with:
-        name: Kernel Image
+        name: kernel-image
         path: kernel/out/arch/arm64/boot/Image.gz
