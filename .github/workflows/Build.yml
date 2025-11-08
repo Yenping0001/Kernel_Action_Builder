@@ -31,8 +31,13 @@ jobs:
         cd toolchain/gcc/linux-x86/aarch64/
         git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 --depth=1
         cd ../../../clang/host/linux-x86/
-        git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/clang-r383902 --depth=1
-        cd ../../../../
+        cd ../../../
+        curl -o clang-r383902.tar.gz https://android.googlesource.com/platform//prebuilts/clang/host/linux-x86/+archive/3857008389202edac32d57008bb8c99d2c957f9d/clang-r383902.tar.gz
+        tar -xvzf clang-r383903.tar.gz
+        cd clang-r383902/
+        export PATH=bin:$PATH
+        cd ../../../
+        
 
     - name: Make build script executable
       run: chmod +x build_kernel.sh
@@ -44,8 +49,7 @@ jobs:
         cd kernel  
 
     - name: Build kernel
-      run: ./build_kernel.sh
-
+      run: ./build_kernel.s
     - name: Upload build output
       if: success()
       uses: actions/upload-artifact@v4
