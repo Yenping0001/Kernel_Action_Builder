@@ -33,7 +33,7 @@ jobs:
         cd ../../../clang/host/linux-x86/
         cd ../../../
         curl -o clang-r383902.tar.gz https://android.googlesource.com/platform//prebuilts/clang/host/linux-x86/+archive/3857008389202edac32d57008bb8c99d2c957f9d/clang-r383902.tar.gz
-        tar -xzf clang-r383903.tar.gz
+        tar -xzf clang-r383902.tar.gz
         cd clang-r383902/
         export PATH=bin:$PATH
         cd ../../../
